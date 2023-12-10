@@ -9,7 +9,7 @@ console.log(sendButton)
 console.log(chatInput)
 let userText = null //Enter a prompt here kısmının içindeki veriyi alabilmemiz için globalde bir let tanımladık. 
 
-const API_KEY = "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"
+const API_KEY = "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"
 
 const createElement = (html, className) =>{
     //yeni div oluşturma ve belirtilen chat sınıfını ekleme
