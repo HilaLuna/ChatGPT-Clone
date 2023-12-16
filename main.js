@@ -2,14 +2,37 @@ const chatInput = document.querySelector("#chat-input")
 const sendButton = document.querySelector("#send-btn")
 const chatContainer = document.querySelector(".chat-container")
 const themeButton = document.querySelector("#theme-btn")
+const deleteButton = document.querySelector("#delete-btn")
 
-console.log(themeButton)
-console.log(chatContainer)
-console.log(sendButton)
-console.log(chatInput)
+console.log(deleteButton)
+//console.log(chatContainer)
+//console.log(sendButton)
+//console.log(chatInput)
 let userText = null //Enter a prompt here kısmının içindeki veriyi alabilmemiz için globalde bir let tanımladık. 
 
 const API_KEY = "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"
+const initialHeight = chatInput.scrollHeight
+
+// sayfa yüklendiğinde yerel depodan (localStorage) veri yükler
+const loadDataFromLocalStorage = () =>{
+    //tema rengini kontrol eder ve geçerli temayı uygular
+const themeColor = localStorage.getItem("theme-color")
+document.body.classList.toggle("light-mode",themeColor==="light_mode")
+    // tema rengini yerel depoda günceller
+    localStorage.setItem("theme-color", themeButton.innerText)
+    themeButton.innerText = document.body.classList.contains("light-mode")
+        ? "dark_mode" //şartlı renderlama
+        : "light_mode"
+        const defaultText = `
+            <div class="default-text">
+                <h1>ChatGPT Clone</h1>
+            </div>
+        `;
+    chatContainer.innerHTML = localStorage.getItem("all-chats") || defaultText
+    //sayfayı sohbetin en altına kaydırır
+    chatContainer.scrollTo(0, chatContainer.scrollHeight)
+}
+loadDataFromLocalStorage() //bu fonksiyonu tanımladığımız için chatgpt clone'da arama yapıp sayfayı yenilediğinde yazdıkların kaybolmuyor.
 
 const createElement = (html, className) =>{
     //yeni div oluşturma ve belirtilen chat sınıfını ekleme
@@ -54,6 +77,7 @@ const getChatResponse = async (incomingChatDiv) => {
     incomingChatDiv.querySelector(".typing-animation").remove()
     incomingChatDiv.querySelector(".chat-details").appendChild(pElement)
     chatContainer.scrollTo(0, chatContainer.scrollHeight)
+    localStorage.setItem("all-chats", chatContainer.innerHTML)
 }
 
 const showTypingAnimation = () => {
@@ -91,7 +115,7 @@ const handleOutGoingChat =() =>{ //bu fonksiyonu burada tanımlıyoruz.arrow fun
 
 const outgoingChatDiv = createElement(html, "outgoing") //JS'te div createElement'le yapılıyor
 outgoingChatDiv.querySelector("p").textContent = userText
-// document.querySelector(".default-text")?.remove()
+document.querySelector(".default-text")?.remove()
 chatContainer.appendChild(outgoingChatDiv)
 chatContainer.scrollTo(0, chatContainer.scrollHeight)
 setTimeout(showTypingAnimation, 500)
@@ -99,7 +123,28 @@ setTimeout(showTypingAnimation, 500)
 
 themeButton.addEventListener("click", () =>{
     document.body.classList.toggle("light-mode")
-    themeButton.innerText = document.body.classList
+    localStorage.setItem("theme-color", themeButton.innerText)
+    themeButton.innerText = document.body.classList.contains("light-mode") 
+    ? "dark_mode" //soru işareti eğer içeriyorsa anlamına geliyor
+    : "light_mode" // eğer içermiyorsa
+})
+
+deleteButton.addEventListener("click",()=>{
+    if(confirm("Tüm sohbeti silmek istediğinizden emin misiniz?")){
+     localStorage.removeItem("all-chats")
+     loadDataFromLocalStorage()
+    }
+})
+
+chatInput.addEventListener("input",()=>{
+    chatInput.style.height = `${initialHeight}px`
+    chatInput.style.height = `${chatInput.scrollHeight}px` //en altta yazı yazdığımız kutucuğu scroll yapınca büyüttük.
+})
+chatInput.addEventListener("keydown",(e) =>{ //keydown bir tuşa basıp onu izlememizi sağlar
+    if(e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+        e.preventDefault()
+        handleOutGoingChat()
+    }
 })
 
 sendButton.addEventListener("click", handleOutGoingChat) //buna tıklandığında bir fonksiyon çalıştırsın.
